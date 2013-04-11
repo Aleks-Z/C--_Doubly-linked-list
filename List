@@ -1,0 +1,174 @@
+// example.cpp : Defines the entry point for the console application.
+//
+#define BOOST_TEST_MODULE Link
+#define BOOST_TEST_DYNLINK
+#define BOOST_TEST_MAIN
+#include <boost/test/unit_test.hpp>
+#include "stdafx.h"
+#include <iostream>
+#include <conio.h>
+
+struct node { 
+  node* next;
+	node* prev;
+	int value;
+};
+
+struct iterator {
+	node* node;
+
+	iterator& operator++ () {
+		node = node -> next;
+		return *this;
+	}
+
+	iterator& operator-- () {
+		node = node -> prev;
+		return *this;
+	}
+
+};
+
+struct list {
+	node* head;
+	node* tail;
+	node next_after_tail;
+	int size;
+
+	list() {
+		size = 0;
+		head = nullptr;
+		next_after_tail = node();
+		tail = &next_after_tail;
+		next_after_tail.next = nullptr;
+		next_after_tail.prev = tail;
+	}
+
+	list(list const& a) {	
+		size = a.size;
+		head = a.head;
+		tail = a.tail;
+		next_after_tail = a.next_after_tail;
+	}
+
+	~list() {
+
+	}
+
+
+	list& operator= (list const& a) {
+		list list_1 = list();
+		list_1.size = a.size;
+		list_1.head = nullptr;
+		list_1.tail = nullptr;
+		node* k = a.head;
+		for (int i = 0; i < list_1.size; i++) {
+			list_1.push_back(k -> value);
+			k++;
+		}
+	   return list_1; 
+   }
+
+	void push_back (int x) {
+		node* a = new node();	
+		if (size != 0) {
+			a -> value = x;
+			a -> next = &next_after_tail;
+			a -> prev = tail;
+			tail -> next = a;
+			next_after_tail.prev = a;
+			tail = a;
+		} else {
+			a -> value = x;
+			a -> next = &next_after_tail;
+			a -> prev = nullptr;
+			head = tail = a;
+		}
+		size++;
+	}
+
+
+	void pop_back() {
+		if (size != 1) {
+			tail -> prev -> next = &next_after_tail;
+			next_after_tail.prev = tail -> prev;
+			tail = tail -> prev;
+		} 
+		size--;
+	}
+
+	int back() {
+		return tail -> value;
+	}
+
+	void push_front(int x) {
+		node* a = new node();
+		if (size != 0) {
+			a -> value = x;
+			a -> prev = nullptr;
+			a -> next = head;
+			head -> prev = a;
+			head = a;
+		} else {
+			a -> value = x;
+			a -> next = &next_after_tail;
+			a -> prev = nullptr;
+			head = tail = a;
+		}
+		size++;
+	}
+	
+	void pop_front() {
+		if (size != 1) {
+			head -> next -> prev = nullptr;
+			head = head -> next;
+		}
+		size--;
+	}
+
+	int front() {
+		return head -> value;
+	}
+	
+	void erase (iterator k) {
+		if (k.node != head) {
+			k.node -> next -> prev = k.node-> prev;
+			k.node -> prev -> next = k.node -> next;
+		}
+		k++;
+		size--;
+	}
+
+	void insert(iterator k, int x) {
+		node* a = new node();
+		a -> value = x;
+		a -> prev = k.node;
+		a -> next = k.node -> next;
+		k.node -> prev -> next = a;
+		k.node -> next -> prev = a;
+		size++;
+
+	}
+
+};
+
+using namespace std;
+
+list my_list;
+
+void main() {
+	my_list.push_front(7);
+	my_list.pop_front();
+	my_list.push_back(6);
+	my_list.pop_back();
+	my_list.push_back(5);
+	my_list.push_back(4);
+	my_list.push_back(3);
+	my_list.push_front(6);
+	
+	BOOST_CHECK_EQUAL(my_list.head-> value, 6);
+	//cout << "Tail : " << my_list.back() << endl<< "Head : " << my_list.front() << endl;
+	//system("pause");
+
+}
+
